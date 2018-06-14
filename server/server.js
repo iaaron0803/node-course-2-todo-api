@@ -1,10 +1,4 @@
-var env = process.env.NODE_ENV || 'development';
-
-if(env === 'development'){
-    process.env.MONGODB_URI = 'mongodb://user:aaron7662@ds161574.mlab.com:61574/node-db';
-}else if(env === 'test'){
-    process.env.MONGODB_URI = 'mongodb://user:aaron7662@ds161574.mlab.com:61574/node-db-test';
-}
+require('./config/config.js');
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -102,6 +96,21 @@ app.patch('/todos/:id', (req, res)=>{
         res.status(400).send();
     })
 });
+
+app.post('/user', (req, res)=>{
+    var body = _.pick(req.body, ['email', 'password']);
+    var user = new User(body);
+
+   user.save().then(() => {
+    return user.generateAuthToken();
+  }).then((token) => {
+    
+    res.header('x-auth', token).send(user);
+  }).catch((e) => {
+    res.status(400).send(e);
+  })
+});
+
 
 app.listen(process.env.PORT, process.env.IP, ()=>{
     console.log(`Started on port ${process.env.PORT} `);
